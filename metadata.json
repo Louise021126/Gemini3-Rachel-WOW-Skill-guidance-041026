@@ -1,0 +1,5 @@
+{
+  "name": "ORICKS v4.0 - Advanced 35-Agent FDA Review System",
+  "description": "A dynamic, multi-agent ecosystem for FDA 510(k) medical device submission review, featuring sequential workflows, real-time search grounding, and a painter-inspired aesthetic engine.",
+  "requestFramePermissions": []
+}
