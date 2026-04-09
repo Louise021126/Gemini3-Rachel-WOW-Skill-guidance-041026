@@ -82,13 +82,13 @@ export default function App() {
   const [currentStyle, setCurrentStyle] = useState<PainterStyle>('Default');
   const [agents, setAgents] = useState<Agent[]>(INITIAL_AGENTS);
   const [results, setResults] = useState<ReviewResults | null>(null);
-  const [logs, setLogs] = useState<{ time: string; msg: string; type: 'info' | 'success' | 'error' }[]>([]);
+  const [logs, setLogs] = useState<{ id: string; time: string; msg: string; type: 'info' | 'success' | 'error' }[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const style = useMemo(() => STYLE_CONFIGS[currentStyle], [currentStyle]);
 
   const addLog = (msg: string, type: 'info' | 'success' | 'error' = 'info') => {
-    setLogs(prev => [{ time: new Date().toLocaleTimeString(), msg, type }, ...prev].slice(0, 50));
+    setLogs(prev => [{ id: Math.random().toString(36).substr(2, 9), time: new Date().toLocaleTimeString(), msg, type }, ...prev].slice(0, 50));
   };
 
   const handleAgentPulse = (step: number) => {
@@ -149,7 +149,7 @@ export default function App() {
             <div className="grid grid-cols-2 gap-2">
               {(Object.keys(STYLE_CONFIGS) as PainterStyle[]).map(s => (
                 <Button 
-                  key={s}
+                  key={`style-${s}`}
                   variant={currentStyle === s ? 'default' : 'outline'}
                   size="sm"
                   className={cn(
@@ -300,9 +300,9 @@ export default function App() {
           <Badge variant="outline" className="text-[9px]">{logs.length}</Badge>
         </div>
         <ScrollArea className="flex-1 p-4">
-          <div className="space-y-3">
-            {logs.map((log, i) => (
-              <div key={i} className="space-y-1">
+          <div className="space-y-4">
+            {logs.map((log) => (
+              <div key={log.id} className="space-y-1">
                 <div className="flex items-center justify-between text-[9px] font-mono opacity-40">
                   <span>{log.time}</span>
                   <span className={cn(

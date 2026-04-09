@@ -13,19 +13,19 @@ export const AgentPulseMap: React.FC<AgentPulseMapProps> = ({ agents }) => {
   const groups = ['Intake', 'Technical', 'Regulatory', 'WOW'] as const;
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-xs font-black uppercase tracking-widest opacity-50">Agent Pulse Map (35)</h3>
-      <div className="grid grid-cols-1 gap-4">
-        {groups.map(group => (
-          <div key={group} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase">{group} Squad</span>
-              <Badge variant="outline" className="text-[9px] h-4">{agents.filter(a => a.group === group).length}</Badge>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {agents.filter(a => a.group === group).map(agent => (
-                <TooltipProvider key={agent.id}>
-                  <Tooltip>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <h3 className="text-xs font-black uppercase tracking-widest opacity-50">Agent Pulse Map (35)</h3>
+        <div className="grid grid-cols-1 gap-4">
+          {groups.map(group => (
+            <div key={`group-${group}`} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase">{group} Squad</span>
+                <Badge variant="outline" className="text-[9px] h-4">{agents.filter(a => a.group === group).length}</Badge>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {agents.filter(a => a.group === group).map(agent => (
+                  <Tooltip key={`agent-${agent.id}`}>
                     <TooltipTrigger>
                       <motion.div
                         animate={{
@@ -52,12 +52,12 @@ export const AgentPulseMap: React.FC<AgentPulseMapProps> = ({ agents }) => {
                       </div>
                     </TooltipContent>
                   </Tooltip>
-                </TooltipProvider>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
