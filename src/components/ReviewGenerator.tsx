@@ -14,15 +14,16 @@ import { Search, FileText, Database, ClipboardCheck, Code, Download, Loader2, Sp
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { runSequentialReview } from '../lib/gemini';
-import { ReviewResults } from '../types';
+import { ReviewResults, LLMSettings } from '../types';
 import { toast } from 'sonner';
 
 interface ReviewGeneratorProps {
   onResults: (results: ReviewResults) => void;
   onAgentPulse: (step: number) => void;
+  settings: LLMSettings;
 }
 
-export const ReviewGenerator: React.FC<ReviewGeneratorProps> = ({ onResults, onAgentPulse }) => {
+export const ReviewGenerator: React.FC<ReviewGeneratorProps> = ({ onResults, onAgentPulse, settings }) => {
   const [input, setInput] = useState('');
   const [template, setTemplate] = useState('');
   const [language, setLanguage] = useState<'Traditional Chinese' | 'English'>('Traditional Chinese');
@@ -37,6 +38,11 @@ export const ReviewGenerator: React.FC<ReviewGeneratorProps> = ({ onResults, onA
       return;
     }
 
+    if (!settings.apiKey) {
+      toast.error('Please provide a Gemini API Key in the Settings tab.');
+      return;
+    }
+
     setIsGenerating(true);
     setCurrentStep(1);
     try {
@@ -44,6 +50,7 @@ export const ReviewGenerator: React.FC<ReviewGeneratorProps> = ({ onResults, onA
         input,
         template,
         language,
+        settings,
         (step, message) => {
           setCurrentStep(step);
           setStepMessage(message);
@@ -145,7 +152,7 @@ export const ReviewGenerator: React.FC<ReviewGeneratorProps> = ({ onResults, onA
           <div className="flex gap-4">
             {steps.map(step => (
               <div 
-                key={step.id}
+                key={`step-${step.id}`}
                 className={`flex flex-col items-center gap-2 transition-opacity duration-500 ${currentStep >= step.id ? 'opacity-100' : 'opacity-20'}`}
               >
                 <div className={`p-3 rounded-full ${currentStep === step.id ? 'bg-primary text-primary-foreground animate-pulse' : 'bg-slate-200'}`}>

@@ -8,25 +8,34 @@ import { ScrollArea } from './ui/scroll-area';
 import { Sparkles, Highlighter, ListChecks, FileType, Trash2 } from 'lucide-react';
 import { GoogleGenAI } from "@google/genai";
 import { toast } from 'sonner';
+import { LLMSettings } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+interface AINoteKeeperProps {
+  settings: LLMSettings;
+}
 
-export const AINoteKeeper: React.FC = () => {
+export const AINoteKeeper: React.FC<AINoteKeeperProps> = ({ settings }) => {
   const [notes, setNotes] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const applyMagic = async (type: 'coralize' | 'summarize' | 'formalize') => {
     if (!notes) return;
+    if (!settings.apiKey) {
+      toast.error('Please provide a Gemini API Key in the Settings tab.');
+      return;
+    }
+
     setIsProcessing(true);
     try {
+      const ai = new GoogleGenAI({ apiKey: settings.apiKey });
       const prompt = type === 'coralize' 
-        ? "Highlight critical regulatory keywords in this text by wrapping them in **bold**. Focus on FDA terms, standards, and safety requirements."
+        ? settings.prompts.noteCoralize
         : type === 'summarize'
-        ? "Condense these notes into clear, executive bullet points focusing on regulatory impact."
-        : "Transform these informal notes into formal, professional regulatory language suitable for an FDA submission.";
+        ? settings.prompts.noteSummarize
+        : settings.prompts.noteFormalize;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+      const response = await (ai as any).models.generateContent({
+        model: settings.modelFlash,
         contents: `${prompt}\n\nText:\n${notes}`,
       });
 

@@ -70,7 +70,7 @@ export const SubmissionForm: React.FC<SubmissionFormProps> = ({ dataset, questio
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {entities.filter(e => e.category === cat).map((entity, idx) => (
-                    <div key={`entity-${entity.id}-${idx}`} className="space-y-2 group">
+                    <div key={`entity-${cat}-${entity.id}-${idx}`} className="space-y-2 group">
                       <div className="flex items-center justify-between">
                         <Label className="text-xs font-bold opacity-70 group-hover:opacity-100 transition-opacity">
                           {entity.name}

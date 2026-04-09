@@ -27,8 +27,11 @@ import { SubmissionForm } from './components/SubmissionForm';
 import { AINoteKeeper } from './components/AINoteKeeper';
 import { SkillCreator } from './components/SkillCreator';
 import { AgentPulseMap } from './components/AgentPulseMap';
+import { LLMSettingsManager } from './components/LLMSettingsManager';
 import { STYLE_CONFIGS } from './lib/styleEngine';
-import { PainterStyle, Agent, ReviewResults } from './types';
+import { DEFAULT_LLM_SETTINGS } from './lib/llmDefaults';
+import { PainterStyle, Agent, ReviewResults, LLMSettings } from './types';
+import { Settings } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -84,11 +87,33 @@ export default function App() {
   const [results, setResults] = useState<ReviewResults | null>(null);
   const [logs, setLogs] = useState<{ id: string; time: string; msg: string; type: 'info' | 'success' | 'error' }[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  const [llmSettings, setLlmSettings] = useState<LLMSettings>(() => {
+    const saved = localStorage.getItem('oricks_llm_settings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved LLM settings", e);
+      }
+    }
+    return DEFAULT_LLM_SETTINGS;
+  });
 
   const style = useMemo(() => STYLE_CONFIGS[currentStyle], [currentStyle]);
 
+  const handleSaveSettings = (newSettings: LLMSettings) => {
+    setLlmSettings(newSettings);
+    localStorage.setItem('oricks_llm_settings', JSON.stringify(newSettings));
+  };
+
+  const handleResetSettings = () => {
+    setLlmSettings(DEFAULT_LLM_SETTINGS);
+    localStorage.removeItem('oricks_llm_settings');
+  };
+
   const addLog = (msg: string, type: 'info' | 'success' | 'error' = 'info') => {
-    setLogs(prev => [{ id: Math.random().toString(36).substr(2, 9), time: new Date().toLocaleTimeString(), msg, type }, ...prev].slice(0, 50));
+    setLogs(prev => [{ id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, time: new Date().toLocaleTimeString(), msg, type }, ...prev].slice(0, 50));
   };
 
   const handleAgentPulse = (step: number) => {
@@ -207,7 +232,7 @@ export default function App() {
           <div className="max-w-6xl mx-auto space-y-12">
             <Tabs defaultValue="generator" className="w-full">
               <TabsList className={cn(
-                "grid grid-cols-4 w-full h-14 p-1 mb-8",
+                "grid grid-cols-5 w-full h-14 p-1 mb-8",
                 style.border,
                 "border-2",
                 style.radius
@@ -224,6 +249,9 @@ export default function App() {
                 <TabsTrigger value="skills" className="text-xs font-black uppercase tracking-widest">
                   <ShieldCheck className="h-4 w-4 mr-2" /> Skill Creator
                 </TabsTrigger>
+                <TabsTrigger value="settings" className="text-xs font-black uppercase tracking-widest">
+                  <Settings className="h-4 w-4 mr-2" /> LLM Settings
+                </TabsTrigger>
               </TabsList>
 
               <AnimatePresence mode="wait">
@@ -239,6 +267,7 @@ export default function App() {
                         addLog('Review results received', 'success');
                       }} 
                       onAgentPulse={handleAgentPulse}
+                      settings={llmSettings}
                     />
                   </motion.div>
                 </TabsContent>
@@ -267,7 +296,7 @@ export default function App() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                   >
-                    <AINoteKeeper />
+                    <AINoteKeeper settings={llmSettings} />
                   </motion.div>
                 </TabsContent>
 
@@ -277,7 +306,21 @@ export default function App() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                   >
-                    <SkillCreator />
+                    <SkillCreator settings={llmSettings} />
+                  </motion.div>
+                </TabsContent>
+
+                <TabsContent value="settings">
+                  <motion.div
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                  >
+                    <LLMSettingsManager 
+                      settings={llmSettings} 
+                      onSave={handleSaveSettings}
+                      onReset={handleResetSettings}
+                    />
                   </motion.div>
                 </TabsContent>
               </AnimatePresence>

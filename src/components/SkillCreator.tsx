@@ -12,29 +12,30 @@ import { GoogleGenAI } from "@google/genai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
+import { LLMSettings } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
+interface SkillCreatorProps {
+  settings: LLMSettings;
+}
 
-export const SkillCreator: React.FC = () => {
+export const SkillCreator: React.FC<SkillCreatorProps> = ({ settings }) => {
   const [description, setDescription] = useState('');
   const [skillMd, setSkillMd] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateSkill = async () => {
     if (!description) return;
+    if (!settings.apiKey) {
+      toast.error('Please provide a Gemini API Key in the Settings tab.');
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Act as a Skill Architect. Create a standardized Skill.md file based on the following user description. 
-        
-        Description: ${description}
-        
-        Requirements:
-        1. Valid YAML frontmatter (name, description).
-        2. Detailed markdown instructions.
-        3. Add 3 "WOW" AI features that enhance this specific skill (e.g., automated risk scoring, predicate mapping, adversarial red teaming).
-        4. Include a section for "Technical Data Models" if applicable.`,
+      const ai = new GoogleGenAI({ apiKey: settings.apiKey });
+      const response = await (ai as any).models.generateContent({
+        model: settings.modelFlash,
+        contents: settings.prompts.skillArchitect.replace('{{description}}', description),
       });
 
       setSkillMd(response.text || '');

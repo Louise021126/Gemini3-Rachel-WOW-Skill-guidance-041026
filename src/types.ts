@@ -1,4 +1,22 @@
 
+export interface LLMSettings {
+  apiKey: string;
+  modelFlash: string;
+  modelPro: string;
+  prompts: {
+    webSummary: string;
+    fdaSummary: string;
+    datasetExtraction: string;
+    reviewReport: string;
+    skillCreation: string;
+    formQuestions: string;
+    noteCoralize: string;
+    noteSummarize: string;
+    noteFormalize: string;
+    skillArchitect: string;
+  };
+}
+
 export interface ReviewResults {
   webSummary: string;       // 2000-3000 words
   fdaSummary: string;       // 3000-4000 words
